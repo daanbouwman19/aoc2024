@@ -11,11 +11,11 @@ fn main() {
     part_two(INPUT_FILE);
 }
 
-fn part_one(filename: &str) {
+fn read_file(filename: &str) -> (Vec<i32>, Vec<i32>) {
     let file = std::fs::File::open(filename).unwrap();
     let reader = std::io::BufReader::new(file);
 
-    let (mut left, mut right): (Vec<i32>, Vec<i32>) = reader
+    let (left, right): (Vec<i32>, Vec<i32>) = reader
         .lines()
         .map(|line| {
             let line = line.unwrap();
@@ -25,6 +25,12 @@ fn part_one(filename: &str) {
             (num_left, num_right)
         })
         .unzip();
+
+    (left, right)
+}
+
+fn part_one(filename: &str) {
+    let (mut left, mut right) = read_file(filename);
 
     left.sort_unstable();
     right.sort_unstable();
@@ -39,20 +45,7 @@ fn part_one(filename: &str) {
 }
 
 fn part_two(filename: &str) {
-    let file = std::fs::File::open(filename).unwrap();
-    let reader = std::io::BufReader::new(file);
-
-    let (left, right): (Vec<i32>, Vec<i32>) = reader
-        .lines()
-        .map(|line| {
-            let line = line.unwrap();
-            let mut parts = line.split_ascii_whitespace();
-            let left: i32 = parts.next().unwrap().parse().unwrap();
-            let right: i32 = parts.next().unwrap().parse().unwrap();
-
-            (left, right)
-        })
-        .unzip();
+    let (left, right) = read_file(filename);
 
     let right_counted: HashMap<i32, i32> = right.iter().fold(HashMap::new(), |mut acc, &x| {
         *acc.entry(x).or_insert(0) += 1;
