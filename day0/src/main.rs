@@ -9,24 +9,19 @@ fn part_one() {
     let file = std::fs::File::open("input.txt").unwrap();
     let reader = std::io::BufReader::new(file);
 
-    let mut left: Vec<i32> = Vec::new();
-    let mut right: Vec<i32> = Vec::new();
+    let (mut left, mut right): (Vec<i32>, Vec<i32>) = reader
+        .lines()
+        .map(|line| {
+            let line = line.unwrap();
+            let mut parts = line.split_ascii_whitespace();
+            let num_left: i32 = parts.next().unwrap().parse().unwrap();
+            let num_right: i32 = parts.next().unwrap().parse().unwrap();
+            (num_left, num_right)
+        })
+        .unzip();
 
-    for line in reader.lines() {
-        let line = line.unwrap();
-        let mut parts = line.split_whitespace();
-        let str_left = parts.next().unwrap();
-        let str_right = parts.next().unwrap();
-
-        let num_left = str_left.parse::<i32>().unwrap();
-        let num_right = str_right.parse::<i32>().unwrap();
-
-        left.push(num_left);
-        right.push(num_right);
-    }
-
-    left.sort();
-    right.sort();
+    left.sort_unstable();
+    right.sort_unstable();
 
     let total_distance: i32 = left
         .iter()
