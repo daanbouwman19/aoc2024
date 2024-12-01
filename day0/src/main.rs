@@ -1,12 +1,18 @@
 use std::{collections::HashMap, io::BufRead};
 
+const EXAMPLE_FILE: &str = "example.txt";
+const INPUT_FILE: &str = "input.txt";
+
 fn main() {
-    part_one();
-    part_two();
+    part_one(EXAMPLE_FILE);
+    part_one(INPUT_FILE);
+
+    part_two(EXAMPLE_FILE);
+    part_two(INPUT_FILE);
 }
 
-fn part_one() {
-    let file = std::fs::File::open("input.txt").unwrap();
+fn part_one(filename: &str) {
+    let file = std::fs::File::open(filename).unwrap();
     let reader = std::io::BufReader::new(file);
 
     let (mut left, mut right): (Vec<i32>, Vec<i32>) = reader
@@ -29,11 +35,11 @@ fn part_one() {
         .map(|(l, r)| (l - r).abs())
         .sum();
 
-    println!("part 1: {}", total_distance);
+    println!("Part 1. File: {}, output: {}", filename, total_distance);
 }
 
-fn part_two() {
-    let file = std::fs::File::open("input.txt").unwrap();
+fn part_two(filename: &str) {
+    let file = std::fs::File::open(filename).unwrap();
     let reader = std::io::BufReader::new(file);
 
     let (left, right): (Vec<i32>, Vec<i32>) = reader
@@ -58,5 +64,5 @@ fn part_two() {
         .filter_map(|value| right_counted.get(value).map(|count| value * count))
         .sum();
 
-    println!("part 2: {}", total);
+    println!("Part 2. File: {}, output: {}", filename, total);
 }
