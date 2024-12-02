@@ -4,7 +4,7 @@ use std::{
 };
 
 fn main() {
-    let file = fs::File::open("example.txt").unwrap();
+    let file = fs::File::open("input.txt").unwrap();
     let buf_reader = BufReader::new(file);
 
     let data = buf_reader
@@ -48,10 +48,13 @@ fn validate_line(line: &Vec<isize>) -> bool {
 
 fn validate_line_with_remove(line: &Vec<isize>) -> bool {
     for i in 0..line.len() {
-        let mut new_line = line.clone();
-        new_line.remove(i);
-
-        if validate_line(&new_line) {
+        if validate_line(
+            &line
+                .iter()
+                .enumerate()
+                .filter_map(|(index, &value)| if index == i { None } else { Some(value) })
+                .collect(),
+        ) {
             return true;
         }
     }
