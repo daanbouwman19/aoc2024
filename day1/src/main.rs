@@ -4,7 +4,7 @@ use std::{
 };
 
 fn main() {
-    let file = fs::File::open("input.txt").unwrap();
+    let file = fs::File::open("example.txt").unwrap();
     let buf_reader = BufReader::new(file);
 
     let data = buf_reader
@@ -24,28 +24,7 @@ fn main() {
 fn part_one(data: &Vec<Vec<isize>>) {
     let mut amount_valid = 0;
     for line in data {
-        let mut increasing = true;
-        let mut decreasing = true;
-        let mut valid = true;
-
-        for n in 1..line.len() {
-            let current = line[n];
-            let previous = line[n - 1];
-
-            let diff = current - previous;
-
-            if diff.abs() <= 0 || diff.abs() > 3 {
-                valid = false;
-            }
-
-            if diff < 0 {
-                increasing = false;
-            } else if diff > 0 {
-                decreasing = false;
-            }
-        }
-
-        if valid && (increasing || decreasing) {
+        if validate_line(line) {
             amount_valid = amount_valid + 1;
         }
     }
@@ -57,15 +36,25 @@ fn part_two(data: &Vec<Vec<isize>>) {
     let mut amount_valid = 0;
 
     for line in data {
-        if validate_line(line, false) {
+        if validate_line(line) {
             amount_valid = amount_valid + 1;
+        } else {
+            for index in 0..line.len() {
+                let mut new_line = line.clone();
+                new_line.remove(index);
+
+                if validate_line(&new_line) {
+                    amount_valid = amount_valid + 1;
+                    break;
+                }
+            }
         }
     }
 
     println!("part two: safe amount: {}", amount_valid);
 }
 
-fn validate_line(line: &Vec<isize>, r: bool) -> bool {
+fn validate_line(line: &Vec<isize>) -> bool {
     let mut increasing = true;
     let mut decreasing = true;
     let mut valid = true;
@@ -88,23 +77,12 @@ fn validate_line(line: &Vec<isize>, r: bool) -> bool {
         }
         if !increasing && !decreasing {
             valid = false;
-
             break;
         }
     }
 
     if valid {
         return true;
-    } else if !r {
-        for i in 0..line.len() {
-            let mut new_line = line.clone();
-            new_line.remove(i);
-
-            if validate_line(&new_line, true) {
-                return true;
-            }
-        }
     }
-
     false
 }
