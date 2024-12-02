@@ -4,7 +4,7 @@ use std::{
 };
 
 fn main() {
-    let file = fs::File::open("example.txt").unwrap();
+    let file = fs::File::open("input.txt").unwrap();
     let buf_reader = BufReader::new(file);
 
     let data = buf_reader
@@ -22,35 +22,15 @@ fn main() {
 }
 
 fn part_one(data: &Vec<Vec<isize>>) {
-    let mut amount_valid = 0;
-    for line in data {
-        if validate_line(line) {
-            amount_valid = amount_valid + 1;
-        }
-    }
-
+    let amount_valid = data.iter().filter(|line| validate_line(line)).count();
     println!("part one: safe amount: {}", amount_valid);
 }
 
 fn part_two(data: &Vec<Vec<isize>>) {
-    let mut amount_valid = 0;
-
-    for line in data {
-        if validate_line(line) {
-            amount_valid = amount_valid + 1;
-        } else {
-            for index in 0..line.len() {
-                let mut new_line = line.clone();
-                new_line.remove(index);
-
-                if validate_line(&new_line) {
-                    amount_valid = amount_valid + 1;
-                    break;
-                }
-            }
-        }
-    }
-
+    let amount_valid = data
+        .iter()
+        .filter(|line| validate_line_with_remove(line))
+        .count();
     println!("part two: safe amount: {}", amount_valid);
 }
 
@@ -81,8 +61,17 @@ fn validate_line(line: &Vec<isize>) -> bool {
         }
     }
 
-    if valid {
-        return true;
+    valid
+}
+
+fn validate_line_with_remove(line: &Vec<isize>) -> bool {
+    for i in 0..line.len() {
+        let mut new_line = line.clone();
+        new_line.remove(i);
+
+        if validate_line(&new_line) {
+            return true;
+        }
     }
     false
 }
