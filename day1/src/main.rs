@@ -4,7 +4,7 @@ use std::{
 };
 
 fn main() {
-    let file = fs::File::open("input.txt").unwrap();
+    let file = fs::File::open("example.txt").unwrap();
     let buf_reader = BufReader::new(file);
 
     let data = buf_reader
@@ -35,33 +35,15 @@ fn part_two(data: &Vec<Vec<isize>>) {
 }
 
 fn validate_line(line: &Vec<isize>) -> bool {
-    let mut increasing = true;
-    let mut decreasing = true;
-    let mut valid = true;
+    let window = line.windows(2);
 
-    for n in 1..line.len() {
-        let current = line[n];
-        let previous = line[n - 1];
+    let diffs: Vec<isize> = window.map(|pair| pair[0] - pair[1]).collect();
 
-        let diff = current - previous;
+    let in_bounds = diffs.iter().all(|&diff| diff.abs() > 0 && diff.abs() <= 3);
+    let increasing = diffs.iter().all(|&diff| diff > 0);
+    let decreasing = diffs.iter().all(|&diff| diff < 0);
 
-        if diff.abs() <= 0 || diff.abs() > 3 {
-            valid = false;
-            break;
-        }
-
-        if diff < 0 {
-            increasing = false;
-        } else if diff > 0 {
-            decreasing = false;
-        }
-        if !increasing && !decreasing {
-            valid = false;
-            break;
-        }
-    }
-
-    valid
+    in_bounds && (increasing || decreasing)
 }
 
 fn validate_line_with_remove(line: &Vec<isize>) -> bool {
