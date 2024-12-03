@@ -7,54 +7,45 @@ use std::{
 const FILENAME: &str = "input.txt";
 
 fn main() {
-    part_one();
-    part_two();
+    let file = File::open(FILENAME).unwrap();
+    let reader = BufReader::new(file);
+    let lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
+
+    part_one(&lines);
+    part_two(&lines);
 }
 
-fn part_two() {
-    let file = File::open(FILENAME).unwrap();
-    let buf_reader = BufReader::new(file);
-    let re = Regex::new(r"(mul\(\d+,\d+\)|do\(\)|don't\(\))").unwrap();
+fn part_two(lines: &[String]) {
+    let re = Regex::new(r"(mul\((\d+),(\d+)\)|do\(\)|don't\(\))").unwrap();
     let mut total = 0;
     let mut execute_mul = true;
 
-    for line in buf_reader.lines() {
-        let line = line.unwrap();
-
-        for re_match in re.find_iter(&line) {
-            let re_match = re_match.as_str();
-            if re_match == "do()" {
-                execute_mul = true;
-            } else if re_match == "don't()" {
-                execute_mul = false;
-            } else if execute_mul {
-                let result = re_match.trim_start_matches("mul(").trim_end_matches(")");
-                let values: Vec<String> = result.split(",").map(|s| s.to_string()).collect();
-                let value1: i32 = values[0].parse().unwrap();
-                let value2: i32 = values[1].parse().unwrap();
-                total += value1 * value2;
+    for line in lines {
+        for cap in re.captures_iter(line) {
+            match cap.get(0).unwrap().as_str() {
+                "do()" => execute_mul = true,
+                "don't()" => execute_mul = false,
+                _ if execute_mul => {
+                    let value1: isize = cap[2].parse().unwrap();
+                    let value2: isize = cap[3].parse().unwrap();
+                    total += value1 * value2;
+                }
+                _ => continue,
             }
         }
     }
+
     println!("part two: {}", total);
 }
 
-fn part_one() {
-    let file = File::open(FILENAME).unwrap();
-    let buf_reader = BufReader::new(file);
-    let re = Regex::new(r"mul\(\d+,\d+\)").unwrap();
+fn part_one(lines: &[String]) {
+    let re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
     let mut total = 0;
 
-    for line in buf_reader.lines() {
-        let line = line.unwrap();
-        let results = re.find_iter(&line);
-
-        for result in results {
-            let mut result = result.as_str().trim_start_matches("mul(");
-            result = result.trim_end_matches(")");
-            let values: Vec<String> = result.split(",").map(|s| s.to_string()).collect();
-            let value1: i32 = values[0].parse().unwrap();
-            let value2: i32 = values[1].parse().unwrap();
+    for line in lines {
+        for result in re.captures_iter(line) {
+            let value1: isize = result[1].parse().unwrap();
+            let value2: isize = result[2].parse().unwrap();
             total += value1 * value2;
         }
     }

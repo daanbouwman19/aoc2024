@@ -7,7 +7,7 @@ fn main() {
     let file = fs::File::open("input.txt").unwrap();
     let buf_reader = BufReader::new(file);
 
-    let data = buf_reader
+    let data: Vec<Vec<isize>> = buf_reader
         .lines()
         .map(|line| {
             line.unwrap()
@@ -21,12 +21,12 @@ fn main() {
     part_two(&data);
 }
 
-fn part_one(data: &Vec<Vec<isize>>) {
+fn part_one(data: &[Vec<isize>]) {
     let amount_valid = data.iter().filter(|line| validate_line(line)).count();
     println!("part one: safe amount: {}", amount_valid);
 }
 
-fn part_two(data: &Vec<Vec<isize>>) {
+fn part_two(data: &[Vec<isize>]) {
     let amount_valid = data
         .iter()
         .filter(|line| validate_line_with_remove(line))
@@ -34,7 +34,7 @@ fn part_two(data: &Vec<Vec<isize>>) {
     println!("part two: safe amount: {}", amount_valid);
 }
 
-fn validate_line(line: &Vec<isize>) -> bool {
+fn validate_line(line: &[isize]) -> bool {
     let window = line.windows(2);
 
     let diffs: Vec<isize> = window.map(|pair| pair[0] - pair[1]).collect();
@@ -46,14 +46,14 @@ fn validate_line(line: &Vec<isize>) -> bool {
     in_bounds && (increasing || decreasing)
 }
 
-fn validate_line_with_remove(line: &Vec<isize>) -> bool {
+fn validate_line_with_remove(line: &[isize]) -> bool {
     for i in 0..line.len() {
         if validate_line(
             &line
                 .iter()
                 .enumerate()
                 .filter_map(|(index, &value)| if index == i { None } else { Some(value) })
-                .collect(),
+                .collect::<Vec<isize>>(),
         ) {
             return true;
         }
