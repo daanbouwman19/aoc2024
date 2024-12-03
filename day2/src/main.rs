@@ -1,54 +1,62 @@
-use regex::Regex;
 use std::{
-    fs::File,
+    fs,
     io::{BufRead, BufReader},
 };
 
-const FILENAME: &str = "input.txt";
-
 fn main() {
-    let file = File::open(FILENAME).unwrap();
-    let reader = BufReader::new(file);
-    let lines: Vec<String> = reader.lines().map(|l| l.unwrap()).collect();
+    let file = fs::File::open("input.txt").unwrap();
+    let buf_reader = BufReader::new(file);
 
-    part_one(&lines);
-    part_two(&lines);
+    let data: Vec<Vec<isize>> = buf_reader
+        .lines()
+        .map(|line| {
+            line.unwrap()
+                .split_whitespace()
+                .map(|str| str.parse().unwrap())
+                .collect()
+        })
+        .collect();
+
+    part_one(&data);
+    part_two(&data);
 }
 
-fn part_two(lines: &[String]) {
-    let re = Regex::new(r"(mul\((\d+),(\d+)\)|do\(\)|don't\(\))").unwrap();
-    let mut total = 0;
-    let mut execute_mul = true;
-
-    for line in lines {
-        for cap in re.captures_iter(line) {
-            match cap.get(0).unwrap().as_str() {
-                "do()" => execute_mul = true,
-                "don't()" => execute_mul = false,
-                _ if execute_mul => {
-                    let value1: isize = cap[2].parse().unwrap();
-                    let value2: isize = cap[3].parse().unwrap();
-                    total += value1 * value2;
-                }
-                _ => continue,
-            }
-        }
-    }
-
-    println!("part two: {}", total);
+fn part_one(data: &[Vec<isize>]) {
+    let amount_valid = data.iter().filter(|line| validate_line(line)).count();
+    println!("part one: safe amount: {}", amount_valid);
 }
 
-fn part_one(lines: &[String]) {
-    let re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
-    let mut total = 0;
+fn part_two(data: &[Vec<isize>]) {
+    let amount_valid = data
+        .iter()
+        .filter(|line| validate_line_with_remove(line))
+        .count();
+    println!("part two: safe amount: {}", amount_valid);
+}
 
-    for line in lines {
-        for result in re.captures_iter(line) {
-            let value1: isize = result[1].parse().unwrap();
-            let value2: isize = result[2].parse().unwrap();
-            total += value1 * value2;
+fn validate_line(line: &[isize]) -> bool {
+    let window = line.windows(2);
+
+    let diffs: Vec<isize> = window.map(|pair| pair[0] - pair[1]).collect();
+
+    let in_bounds = diffs.iter().all(|&diff| diff.abs() > 0 && diff.abs() <= 3);
+    let increasing = diffs.iter().all(|&diff| diff > 0);
+    let decreasing = diffs.iter().all(|&diff| diff < 0);
+
+    in_bounds && (increasing || decreasing)
+}
+
+fn validate_line_with_remove(line: &[isize]) -> bool {
+    for i in 0..line.len() {
+        if validate_line(
+            &line
+                .iter()
+                .enumerate()
+                .filter_map(|(index, &value)| if index == i { None } else { Some(value) })
+                .collect::<Vec<isize>>(),
+        ) {
+            return true;
         }
     }
-
-    println!("part one: {}", total);
+    false
 }

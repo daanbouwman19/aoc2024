@@ -1,62 +1,61 @@
-use std::{
-    fs,
-    io::{BufRead, BufReader},
-};
+use std::{collections::HashMap, io::BufRead};
+
+const EXAMPLE_FILE: &str = "example.txt";
+const INPUT_FILE: &str = "input.txt";
 
 fn main() {
-    let file = fs::File::open("input.txt").unwrap();
-    let buf_reader = BufReader::new(file);
+    // part_one(EXAMPLE_FILE);
+    part_one(INPUT_FILE);
 
-    let data: Vec<Vec<isize>> = buf_reader
+    // part_two(EXAMPLE_FILE);
+    part_two(INPUT_FILE);
+}
+
+fn read_file(filename: &str) -> (Vec<i32>, Vec<i32>) {
+    let file = std::fs::File::open(filename).unwrap();
+    let reader = std::io::BufReader::new(file);
+
+    let (left, right): (Vec<i32>, Vec<i32>) = reader
         .lines()
         .map(|line| {
-            line.unwrap()
-                .split_whitespace()
-                .map(|str| str.parse().unwrap())
-                .collect()
+            let line = line.unwrap();
+            let mut parts = line.split_ascii_whitespace();
+            let num_left: i32 = parts.next().unwrap().parse().unwrap();
+            let num_right: i32 = parts.next().unwrap().parse().unwrap();
+            (num_left, num_right)
         })
-        .collect();
+        .unzip();
 
-    part_one(&data);
-    part_two(&data);
+    (left, right)
 }
 
-fn part_one(data: &[Vec<isize>]) {
-    let amount_valid = data.iter().filter(|line| validate_line(line)).count();
-    println!("part one: safe amount: {}", amount_valid);
-}
+fn part_one(filename: &str) {
+    let (mut left, mut right) = read_file(filename);
 
-fn part_two(data: &[Vec<isize>]) {
-    let amount_valid = data
+    left.sort_unstable();
+    right.sort_unstable();
+
+    let total_distance: i32 = left
         .iter()
-        .filter(|line| validate_line_with_remove(line))
-        .count();
-    println!("part two: safe amount: {}", amount_valid);
+        .zip(right.iter())
+        .map(|(l, r)| (l - r).abs())
+        .sum();
+
+    println!("Part 1. File: {}, output: {}", filename, total_distance);
 }
 
-fn validate_line(line: &[isize]) -> bool {
-    let window = line.windows(2);
+fn part_two(filename: &str) {
+    let (left, right) = read_file(filename);
 
-    let diffs: Vec<isize> = window.map(|pair| pair[0] - pair[1]).collect();
+    let right_counted: HashMap<i32, i32> = right.iter().fold(HashMap::new(), |mut acc, &x| {
+        *acc.entry(x).or_insert(0) += 1;
+        acc
+    });
 
-    let in_bounds = diffs.iter().all(|&diff| diff.abs() > 0 && diff.abs() <= 3);
-    let increasing = diffs.iter().all(|&diff| diff > 0);
-    let decreasing = diffs.iter().all(|&diff| diff < 0);
+    let total: i32 = left
+        .iter()
+        .filter_map(|value| right_counted.get(value).map(|count| value * count))
+        .sum();
 
-    in_bounds && (increasing || decreasing)
-}
-
-fn validate_line_with_remove(line: &[isize]) -> bool {
-    for i in 0..line.len() {
-        if validate_line(
-            &line
-                .iter()
-                .enumerate()
-                .filter_map(|(index, &value)| if index == i { None } else { Some(value) })
-                .collect::<Vec<isize>>(),
-        ) {
-            return true;
-        }
-    }
-    false
+    println!("Part 2. File: {}, output: {}", filename, total);
 }
