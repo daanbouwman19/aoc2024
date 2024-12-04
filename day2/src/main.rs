@@ -4,7 +4,7 @@ use std::{
 };
 
 fn main() {
-    let file = fs::File::open("input.txt").unwrap();
+    let file = fs::File::open("robin.txt").unwrap();
     let buf_reader = BufReader::new(file);
 
     let data: Vec<Vec<isize>> = buf_reader
@@ -37,9 +37,9 @@ fn part_two(data: &[Vec<isize>]) {
 fn validate_line(line: &[isize]) -> bool {
     let window = line.windows(2);
 
-    let diffs: Vec<isize> = window.map(|pair| pair[0] - pair[1]).collect();
+    let diffs: Vec<isize> = window.map(|pair| pair[1] - pair[0]).collect();
 
-    let in_bounds = diffs.iter().all(|&diff| diff.abs() > 0 && diff.abs() <= 3);
+    let in_bounds = diffs.iter().all(|&diff| (1..=3).contains(&diff.abs()));
     let increasing = diffs.iter().all(|&diff| diff > 0);
     let decreasing = diffs.iter().all(|&diff| diff < 0);
 
