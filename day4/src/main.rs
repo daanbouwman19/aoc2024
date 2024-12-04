@@ -9,6 +9,7 @@ fn main() {
         .collect();
 
     part_one(&data);
+    part_two(&data);
 }
 
 fn part_one(data: &[Vec<char>]) {
@@ -26,6 +27,31 @@ fn part_one(data: &[Vec<char>]) {
                 find_word_diagonal_1(data, word, x, y, true),
                 find_word_diagonal_2(data, word, x, y, false),
                 find_word_diagonal_2(data, word, x, y, true),
+            ]
+            .iter()
+            .filter(|&x| *x)
+            .count();
+        }
+    }
+
+    println!("count: {}", count);
+}
+
+fn part_two(data: &[Vec<char>]) {
+    let word = "MAS";
+    let mut count = 0;
+
+    for (y, line) in data.iter().enumerate() {
+        for (x, _) in line.iter().enumerate() {
+            count += [
+                find_word_diagonal_1(data, word, x, y, false)
+                    && find_word_diagonal_2(data, word, x + 2, y, false),
+                find_word_diagonal_1(data, word, x, y, true)
+                    && find_word_diagonal_2(data, word, x + 2, y, false),
+                find_word_diagonal_1(data, word, x, y, false)
+                    && find_word_diagonal_2(data, word, x + 2, y, true),
+                find_word_diagonal_1(data, word, x, y, true)
+                    && find_word_diagonal_2(data, word, x + 2, y, true),
             ]
             .iter()
             .filter(|&x| *x)
